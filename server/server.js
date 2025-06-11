@@ -1,10 +1,13 @@
 // 1. Import dependencies   
+require('dotenv').config(); // <-- MOVED TO LINE 1
 const express = require('express');
 const mongoose = require('mongoose');
-require('dotenv').config(); // This loads the variables from .env
-
+const cors = require('cors');
+const authRoutes = require('./Routes/authRoutes');
 // 2. Create Express app
 const app = express();
+app.use(cors());
+app.use(express.json());
 const PORT = 5000;
 
 // 3. Connect to MongoDB
@@ -37,6 +40,8 @@ app.get('/api/roadmaps', async (req, res) => {
     res.status(500).json({ message: "Error fetching roadmaps" });
   }
 });
+
+app.use('/api/auth', authRoutes);
 
 // 6. Start the server
 app.listen(PORT, () => {

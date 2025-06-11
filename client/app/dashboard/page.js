@@ -1,38 +1,48 @@
-// This is our "fake" database for now.
-// It's just a JavaScript object.
-const fakeRoadmap = {
-    title: "Full Stack Developer Roadmap",
-    steps: [
-      { id: 1, title: "Learn HTML & CSS", completed: true },
-      { id: 2, title: "JavaScript Basics", completed: true },
-      { id: 3, title: "Learn a Frontend Framework (React)", completed: false },
-      { id: 4, title: "Learn a Backend (Node.js & Express)", completed: false },
-      { id: 5, title: "Learn a Database (MongoDB)", completed: false },
-    ],
-  };
-  
-  export default function DashboardPage() {
-    return (
-      <main className="p-8">
-        {/* We use curly braces {} to display our JavaScript data */}
-        <h1 className="text-3xl font-bold mb-6">{fakeRoadmap.title}</h1>
-  
-        <div className="flex flex-col gap-4">
-          {/* This is the most important part!
-            We use the .map() function to loop over our array of steps.
-            For each 'step' in the array, we return a block of HTML (JSX).
-            React requires a unique 'key' for each item in a list, so we use step.id.
-          */}
-          {fakeRoadmap.steps.map((step) => (
-            <div key={step.id} className="p-4 border rounded-lg flex items-center gap-4">
-              {/* This is a ternary operator, a simple if/else.
-                If step.completed is true, show ✅, otherwise show ⬜️.
-              */}
-              <span className="text-2xl">{step.completed ? '✅' : '⬜️'}</span>
-              <h2 className="text-xl">{step.title}</h2>
-            </div>
-          ))}
-        </div>
-      </main>
-    );
+'use client'; // This is a new, important line!
+
+import { useState, useEffect } from 'react';
+
+export default function DashboardPage() {
+  // 1. Create a state variable to hold our roadmap data
+  const [roadmap, setRoadmap] = useState(null);
+
+  // 2. useEffect hook to fetch data when the component loads
+  useEffect(() => {
+    const fetchRoadmap = async () => {
+      try {
+        // Fetch data from our backend API
+        const response = await fetch('http://localhost:5000/api/roadmaps');
+        const data = await response.json();
+        // Since our API returns an array, we'll just use the first one for now
+        if (data.length > 0) {
+          setRoadmap(data[0]);
+        }
+      } catch (error) {
+        console.error("Failed to fetch roadmap:", error);
+      }
+    };
+
+    fetchRoadmap();
+  }, []); // The empty array [] means this effect runs only once
+
+  // 3. Conditional rendering while data is loading
+  if (!roadmap) {
+    return <div>Loading your roadmap...</div>;
   }
+
+  // 4. Render the data once it's loaded
+  return (
+    <main className="p-8">
+      <h1 className="text-3xl font-bold mb-6">{roadmap.title}</h1>
+
+      <div className="flex flex-col gap-4">
+        {roadmap.steps.map((step) => (
+          <div key={step.id} className="p-4 border rounded-lg flex items-center gap-4">
+            <span className="text-2xl">{step.completed ? '✅' : '⬜️'}</span>
+            <h2 className="text-xl">{step.title}</h2>
+          </div>
+        ))}
+      </div>
+    </main>
+  );
+}
