@@ -7,7 +7,6 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const authRoutes = require('./Routes/authRoutes');
 const userRoutes = require('./Routes/userRoutes');
-const Roadmap = require('./models/Roadmap');
 // 2. Create Express app
 const app = express();
 app.use(cors());
