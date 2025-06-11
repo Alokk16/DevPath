@@ -6,6 +6,8 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const authRoutes = require('./Routes/authRoutes');
+const userRoutes = require('./Routes/userRoutes');
+const Roadmap = require('./models/Roadmap');
 // 2. Create Express app
 const app = express();
 app.use(cors());
@@ -44,6 +46,7 @@ app.get('/api/roadmaps', authMiddleware, async (req, res) => {
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
 
 // 6. Start the server
 app.listen(PORT, () => {

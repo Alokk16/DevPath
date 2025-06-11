@@ -1,69 +1,117 @@
-'use client'; // This is a new, important line!
+'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function DashboardPage() {
-  // 1. Create a state variable to hold our roadmap data
-  const [roadmap, setRoadmap] = useState(null);
+    const [roadmap, setRoadmap] = useState(null);
+    const [userProgress, setUserProgress] = useState([]); // New state to hold user's progress
+    const [error, setError] = useState('');
+    const router = useRouter();
 
-  // 2. useEffect hook to fetch data when the component loads
-  useEffect(() => {
-    const fetchRoadmap = async () => {
-      // 1. Get the token from Local Storage
+    // This useEffect will run once to fetch all the necessary data
+    useEffect(() => {
       const token = localStorage.getItem('token');
-
-      // If there's no token, don't even try to fetch
       if (!token) {
-        // Optional: Redirect to login page or show a message
-        console.log("No token found, user needs to login.");
-        return;
+          router.push('/login');
+          return;
       }
+  
+      const fetchData = async () => {
+          try {
+              // Use Promise.all to run requests in parallel for speed!
+              const [roadmapResponse, progressResponse] = await Promise.all([
+                  fetch('http://localhost:5000/api/roadmaps', {
+                      headers: { 'Authorization': `Bearer ${token}` }
+                  }),
+                  fetch('http://localhost:5000/api/users/progress', {
+                      headers: { 'Authorization': `Bearer ${token}` }
+                  })
+              ]);
+  
+              if (!roadmapResponse.ok) throw new Error('Failed to fetch roadmap');
+              if (!progressResponse.ok) throw new Error('Failed to fetch progress');
+  
+              const roadmapData = await roadmapResponse.json();
+              const progressData = await progressResponse.json();
+  
+              if (roadmapData.length > 0) {
+                  setRoadmap(roadmapData[0]);
+              }
+              setUserProgress(progressData.progress);
+  
+          } catch (err) {
+              setError(err.message);
+              console.error("Error fetching data:", err);
+          }
+      };
+  
+      fetchData();
+  }, [router]);
 
-      try {
-        // 2. Make the fetch request, but now include the Authorization header
-        const response = await fetch('http://localhost:5000/api/roadmaps', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}` // <-- THE MAGIC LINE!
-          },
-        });
+    // This is the new function to handle clicking a step
+    const handleStepClick = async (stepId) => {
+        const token = localStorage.getItem('token');
+        if (!token) return;
 
-        if (!response.ok) {
-            // If the server responds with an error (like token expired)
-            throw new Error('Failed to fetch roadmap data');
+        try {
+            const response = await fetch('http://localhost:5000/api/users/progress', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({ stepId }),
+            });
+
+            if (!response.ok) throw new Error('Failed to update progress');
+
+            const data = await response.json();
+            
+            // This is "Optimistic UI Update". We update the state right away
+            // to make the UI feel instant.
+            setUserProgress(data.progress);
+
+        } catch (err) {
+            setError(err.message);
+            console.error("Error updating progress:", err);
         }
-
-        const data = await response.json();
-        if (data.length > 0) {
-          setRoadmap(data[0]);
-        }
-      } catch (error) {
-        console.error(error.message);
-        // Optional: Handle error, e.g., redirect to login
-      }
     };
 
-    fetchRoadmap();
-  }, []);
-  // 3. Conditional rendering while data is loading
-  if (!roadmap) {
-    return <div>Loading your roadmap...</div>;
-  }
+    // A helper function to check if a step is completed
+    const isStepCompleted = (stepId) => {
+        return userProgress.includes(stepId);
+    };
 
-  // 4. Render the data once it's loaded
-  return (
-    <main className="p-8">
-      <h1 className="text-3xl font-bold mb-6">{roadmap.title}</h1>
 
-      <div className="flex flex-col gap-4">
-        {roadmap.steps.map((step) => (
-          <div key={step.id} className="p-4 border rounded-lg flex items-center gap-4">
-            <span className="text-2xl">{step.completed ? '✅' : '⬜️'}</span>
-            <h2 className="text-xl">{step.title}</h2>
-          </div>
-        ))}
-      </div>
-    </main>
-  );
+    if (error) {
+        return <div className="p-8 text-red-500">Error: {error}</div>;
+    }
+
+    if (!roadmap) {
+        return <div className="p-8">Loading your roadmap...</div>;
+    }
+
+    return (
+        <main className="p-8">
+            <h1 className="text-3xl font-bold mb-6">{roadmap.title}</h1>
+            
+            <div className="flex flex-col gap-4">
+                {roadmap.steps.map((step) => (
+                    // We make the whole div clickable now
+                    <div 
+                        key={step.id} 
+                        className="p-4 border rounded-lg flex items-center gap-4 cursor-pointer hover:bg-gray-100"
+                        onClick={() => handleStepClick(step.id)}
+                    >
+                        <span className="text-2xl">
+                            {/* The checkmark now depends on our new userProgress state */}
+                            {isStepCompleted(step.id) ? '✅' : '⬜️'}
+                        </span>
+                        <h2 className="text-xl">{step.title}</h2>
+                    </div>
+                ))}
+            </div>
+        </main>
+    );
 }
