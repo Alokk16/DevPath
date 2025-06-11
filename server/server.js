@@ -1,4 +1,6 @@
 // 1. Import dependencies   
+// At the top of server.js
+const authMiddleware = require('./middleware/authMiddleware');
 require('dotenv').config(); // <-- MOVED TO LINE 1
 const express = require('express');
 const mongoose = require('mongoose');
@@ -31,7 +33,7 @@ const roadmapSchema = new mongoose.Schema({
 const Roadmap = mongoose.model('Roadmap', roadmapSchema);
 
 // 5. Define our API routes
-app.get('/api/roadmaps', async (req, res) => {
+app.get('/api/roadmaps', authMiddleware, async (req, res) => {
   try {
     // Use the Roadmap model to find all roadmaps in the database
     const roadmaps = await Roadmap.find();
