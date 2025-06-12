@@ -3,35 +3,21 @@
 @tailwind utilities;
 
 @layer base {
-  /* We are defining our color palette using CSS variables.
-    This makes it easy to change the theme later.
-  */
   :root {
-    --background: #0f172a; /* A very dark blue, almost black */
-    --foreground: #e2e8f0; /* A light, soft gray for text */
-
-    --card-background: #1e293b; /* A lighter dark blue for cards and containers */
-    --card-foreground: #e2e8f0; /* Text color inside cards */
-
-    --primary-accent: #2563eb; /* A vibrant blue for buttons and highlights */
-    --primary-accent-foreground: #ffffff; /* Text on top of the accent color */
-
-    --border-color: #334155; /* A subtle border color */
+    --background: #0f172a;
+    --foreground: #e2e8f0;
+    --card-background: #1e293b;
+    --card-foreground: #e2e8f0;
+    --primary-accent: #2563eb;
+    --primary-accent-foreground: #ffffff;
+    --border-color: #334155;
   }
-
-  /* Now we apply these variables to the base HTML elements.
-    The @apply directive is from Tailwind CSS.
-  */
   body {
     @apply bg-background text-foreground;
   }
-
-  /* Base styles for cards/containers to match the screenshot designs */
   .card {
     @apply bg-card-background text-card-foreground p-6 rounded-lg shadow-lg;
   }
-
-  /* Base styles for buttons */
   .btn-primary {
     @apply bg-primary-accent text-primary-accent-foreground px-4 py-2 rounded-md font-semibold hover:opacity-90 transition-opacity;
   }
