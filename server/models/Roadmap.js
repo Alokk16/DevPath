@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 // This is the schema for a single task, like "HTML Basics"
 const taskSchema = new mongoose.Schema({
-  id: { type: Number, required: true, unique: true }, // A unique ID for progress tracking
+  id: { type: Number, required: true }, // A unique ID for progress tracking
   title: { type: String, required: true },
   problemLink: { type: String, default: '#' },
   discussionLink: { type: String, default: '#' },
@@ -26,4 +26,4 @@ const roadmapSchema = new mongoose.Schema({
 
 const Roadmap = mongoose.model('Roadmap', roadmapSchema);
 
-module.exports = Roadmap;
+module.exports = Roadmap;       
