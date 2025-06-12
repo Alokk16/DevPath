@@ -29,7 +29,7 @@ export default function LoginPage() {
 
         setMessage('Login successful! Redirecting to your dashboard...');
         setTimeout(() => {
-          router.push('/dashboard'); // Redirect to the main dashboard
+          router.push('/roadmaps'); // Redirect to the main dashboard
         }, 2000);
       } else {
         setMessage(data.message || 'Login failed.');
